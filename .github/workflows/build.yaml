@@ -18,7 +18,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Build Indexer
-        run: go build -v stashvision-go/cmd/stashvision.go
+        run: go build -v -mod vendor stashvision-go/cmd/stashvision.go
       - uses: actions/upload-artifact@master
         with:
           name: stashvision.exe
