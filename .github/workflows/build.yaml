@@ -1,0 +1,10 @@
+on: push
+jobs:
+  build_go:
+    name: Build
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Build Indexer
+        uses: "sosedoff/actions/golang-build@master"
+        args: "windows/amd64"
+        working-directory: stashvision-go
