@@ -17,7 +17,7 @@ jobs:
       volumes:
         - stashvision-go:/usr/src/app
       options:
-        - workdir: /usr/src/app
+        workdir: /usr/src/app
     steps:
       - name: Checkout
         uses: actions/checkout@master
