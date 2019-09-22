@@ -41,6 +41,8 @@ github.com/blevesearch/bleve/size
 github.com/blevesearch/go-porterstemmer
 # github.com/blevesearch/segment v0.0.0-20160915185041-762005e7a34f
 github.com/blevesearch/segment
+# github.com/carlescere/scheduler v0.0.0-20170109141437-ee74d2f83d82
+github.com/carlescere/scheduler
 # github.com/couchbase/vellum v0.0.0-20190829182332-ef2e028c01fd
 github.com/couchbase/vellum
 github.com/couchbase/vellum/levenshtein
