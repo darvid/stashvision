@@ -1,5 +1,8 @@
 on:
   push:
+    branches:
+    - 'releases/**'
+    - '!releases/**-alpha'
     paths:
     - 'stashvision-go/**'
     - '**.ahk'
