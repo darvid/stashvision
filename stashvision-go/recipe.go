@@ -172,7 +172,7 @@ func getViableRares(tabIndex int, index bleve.Index, searchSize int) (items []Po
 	if tabIndex != -1 {
 		filters = append(filters, fmt.Sprintf("tabIndex:%d", tabIndex))
 	}
-	filters = append(filters, fmt.Sprintf("frameType:%d", poeFrameTypes[PoeFrameTypeRare]))
+	filters = append(filters, fmt.Sprintf("frameType:%s", poeFrameTypes[PoeFrameTypeRare]))
 	filters = append(filters, fmt.Sprintf("itemLevel:>=%d", ChaosRecipeMinItemLevel))
 	filters = append(filters, fmt.Sprintf("itemLevel:<=%d", ChaosRecipeMaxItemLevel))
 	querystring := strings.Join(filters, " ")
