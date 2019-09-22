@@ -1,0 +1,14 @@
+[General]
+SessionId = xxx
+AccountName = xxx
+
+[Stash]
+DumpTabIndex = 0
+DumpTabQuad = true
+
+[Display]
+DefaultHighlightBorder = 0xff1aff1a
+
+[Bindings]
+ChaosRecipe = +!c
+Search = +!s
