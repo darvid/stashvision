@@ -16,8 +16,7 @@ jobs:
         GO111MODULE: "on"
       volumes:
         - stashvision-go:/usr/src/app
-      options:
-        workdir: /usr/src/app
+      options: "-w /usr/src/app"
     steps:
       - name: Checkout
         uses: actions/checkout@master
