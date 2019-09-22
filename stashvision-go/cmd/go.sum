@@ -1,5 +1,7 @@
 github.com/alecthomas/participle v0.2.0 h1:MBYD61je/vgb5ktXrXth/OdH23fn1lNnT5cZLw3fkh8=
 github.com/alecthomas/participle v0.2.0/go.mod h1:SW6HZGeZgSIpcUWX3fXpfZhuaWHnmoD5KCVaqSaNTkk=
+github.com/celicoo/docli v0.0.0-20190713165129-f4d8c42a3583 h1:C5VvJjs1y8aDRLAaqT5s7vkvu6T3rkfeX8o3prGNqIQ=
+github.com/celicoo/docli v0.0.0-20190713165129-f4d8c42a3583/go.mod h1:5xHzQsfQkLUlvgd33BDn0ACLzyogYFlaTX0zku7zhoo=
 github.com/celicoo/docli v1.0.0 h1:EIZOyZ1ShICd3XuyQi20QPErzEQA/IEwRj/2OMr0Ch0=
 github.com/celicoo/docli v1.0.0/go.mod h1:qirJf4CEfdx13zrZY3BdRk5AjygELln7M3CVBeHkBV8=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
