@@ -27,8 +27,6 @@ jobs:
           GOARCH: amd64
           GO111MODULE: "on"
           PROJECT_PATH: "./stashvision-go"
-        volumes:
-          go:/go
       - run: go build -v cmd/stashvision.go
       - uses: actions/upload-artifact@master
         with:
