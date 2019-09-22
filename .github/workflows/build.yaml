@@ -1,8 +1,9 @@
-on:
-  push:
-    paths:
-    - 'stashvision-go/**'
-    - '**.ahk'
+# on:
+#   push:
+#     paths:
+#     - 'stashvision-go/**'
+#     - '**.ahk'
+on: push
 jobs:
   build_go:
     name: Build
