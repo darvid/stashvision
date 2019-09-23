@@ -42,6 +42,18 @@ compliant.**
 * Non-intrusive to the game client. Completely hotkey-driven, and
   absolutely no auto-clicking.
 
+## Caveats
+
+* Avoid manipulating your stash tabs (or at least the one being scanned)
+  excessively, as updates are nowhere close to real-time. For chaos
+  recipes, the ideal workflow would be to start with a full quad tab,
+  highlight the recipe, move items from the stash to your inventory,
+  vendor, cycle to the next set of items, rinse and repeat, all without
+  moving any items around, or adding new ones to the stash tab.
+* The overlay only works if your game is running in windowed borderless
+  mode. The language will also likely need to be set to English, much
+  like PoE-TradeMacro and other tools that consume PoE's stash API.
+
 ## Screenshots
 
 ![Search capability](screenshot-search-1.png)
@@ -199,6 +211,7 @@ y
 
 In no particular order...
 
+* OAuth
 * Multiple stash tab support
 * Detect in-game stash tab state non-intrusively
 * More vendor recipe support
