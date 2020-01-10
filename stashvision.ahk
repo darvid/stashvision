@@ -139,8 +139,11 @@ HighlightChaosRecipe() {
     } else {
         rewardSets := []
         IniRead, tabIndex, %configFile%, Stash, DumpTabIndex, 0
-        cmd := "stashvision-go\stashvision.exe recipe -n=unid_chaos -p -t=" tabIndex
+        SetWorkingDir %A_ScriptDir%\stashvision-go
+        cmd := "stashvision.exe r -n=unid_chaos -p -t=" tabIndex
         ShellExec(cmd, output)
+        MsgBox, %output%
+        SetWorkingDir %A_ScriptDir%
         ParsePositions(output, rewardSets)
         currentSetIndex = 1
         positions := rewardSets[currentSetIndex]

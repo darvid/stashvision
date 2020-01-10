@@ -61,7 +61,7 @@ func IsClassTwoHandedWeapon(class string) (bool, error) {
 }
 
 const (
-	ArmourCapacity = 7
+	ArmourCapacity = 8
 	WeaponCapacity = 2
 )
 
@@ -102,6 +102,7 @@ func NewItemSet(minItemLevel int, maxItemlevel int) *ItemSet {
 }
 
 func (s *ItemSet) IsFull() bool {
+	fmt.Printf("%d | %d\n", s.armourCount, ArmourCapacity)
 	return s.armourCount == ArmourCapacity && s.weaponCount == WeaponCapacity
 }
 
