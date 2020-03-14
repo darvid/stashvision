@@ -245,7 +245,7 @@ func RunServer(poeSessionId string, accountName string, tabIndex int, index *ble
 				index = &index_
 			}
 		}
-		items, err := session.GetStashItems(accountName, "metamorph", 0, tabIndex)
+		items, err := session.GetStashItems(accountName, "delirium", 0, tabIndex)
 		if err != nil {
 			log.Error(err)
 			return
