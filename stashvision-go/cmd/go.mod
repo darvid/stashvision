@@ -1,4 +1,4 @@
-module github.com/darvid/stashvision/stashvision-go/cmd/stashvision
+module github.com/darvid/stashvision/stashvision-go/cli/stashvision
 
 go 1.13
 
