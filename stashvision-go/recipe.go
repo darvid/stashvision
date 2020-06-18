@@ -193,9 +193,7 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 	set := NewItemSet(ChaosRecipeMinItemLevel, -1)
 	if err = set.AddStashItem(firstItem, true); err != nil {
 		ctxLogger := log.WithFields(log.Fields{
-			"identified": firstItem.Identified,
-			"itemClass":  firstItem.Class,
-			"itemLevel":  firstItem.ItemLevel,
+			"item": firstItem.ToString(),
 		})
 		ctxLogger.Debug(err)
 		return results, nil
@@ -216,7 +214,7 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 		nextRares := rares[:0]
 		for index, stashItem := range rares {
 			ctxLogger := log.WithFields(log.Fields{
-				"itemClass": stashItem.Class,
+				"item": stashItem.ToString(),
 			})
 			err = set.AddStashItem(stashItem, true)
 			if err != nil {

@@ -72,11 +72,7 @@ func (q *Query) Run() {
 	} else if !q.Json {
 		log.Infof("%d search results", len(items))
 		for i, item := range items {
-			name := item.Name
-			if name == "" {
-				name = "[unid]"
-			}
-			log.Infof("- %d: %d %s %s", i+1, item.ItemLevel, name, item.TypeLine)
+			log.Infof("- %d: %s", i+1, item.ToString())
 		}
 	} else {
 		var b []byte

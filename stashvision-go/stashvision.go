@@ -127,6 +127,14 @@ type PoeStashItem struct {
 	Y           int               `json:"y"`
 }
 
+func (i *PoeStashItem) ToString() string {
+	name := i.Name
+	if name == "" {
+		name = "[unid]"
+	}
+	return fmt.Sprintf("%d %s %s", i.ItemLevel, name, i.TypeLine)
+}
+
 func (i *PoeStashItem) PositionString() string {
 	return fmt.Sprintf("%dx%d:%d,%d", i.Width, i.Height, i.X, i.Y)
 }
@@ -195,7 +203,7 @@ func ClearIndexFromQuery(querystring string, index bleve.Index) error {
 }
 
 func IndexStashItem(item PoeStashItem, batch bleve.Batch) error {
-	ctxLogger := log.WithFields(log.Fields{"itemID": item.ID})
+	ctxLogger := log.WithFields(log.Fields{"item": item.ToString()})
 	err := batch.Index(item.ID, item)
 	if err != nil {
 		return errors.New("failed to index stash item")
