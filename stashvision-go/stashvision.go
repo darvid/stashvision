@@ -232,7 +232,7 @@ func IndexStashItems(items []PoeStashItem, index bleve.Index, clearTabIndex int)
 	return nil
 }
 
-func RunServer(poeSessionId string, accountName string, tabIndex int, index *bleve.Index) {
+func RunServer(poeSessionId string, accountName string, leagueName string, tabIndex int, index *bleve.Index) {
 	session := PoeSession{poeSessionId}
 
 	job := func() {
@@ -245,7 +245,7 @@ func RunServer(poeSessionId string, accountName string, tabIndex int, index *ble
 				index = &index_
 			}
 		}
-		items, err := session.GetStashItems(accountName, "metamorph", 0, tabIndex)
+		items, err := session.GetStashItems(accountName, leagueName, 0, tabIndex)
 		if err != nil {
 			log.Error(err)
 			return

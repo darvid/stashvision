@@ -3,9 +3,10 @@ package stashvision
 import (
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/blevesearch/bleve"
 	log "github.com/sirupsen/logrus"
-	"strings"
 )
 
 var RecipeFactories = make(map[string]RecipeFactory)
@@ -102,12 +103,11 @@ func NewItemSet(minItemLevel int, maxItemlevel int) *ItemSet {
 }
 
 func (s *ItemSet) IsFull() bool {
-	fmt.Printf("%d | %d\n", s.armourCount, ArmourCapacity)
 	return s.armourCount == ArmourCapacity && s.weaponCount == WeaponCapacity
 }
 
 func (s *ItemSet) AddStashItem(item PoeStashItem, weaponGreedy bool) error {
-	if item.ItemLevel < s.MinItemLevel || item.ItemLevel > s.MaxItemLevel {
+	if item.ItemLevel < s.MinItemLevel || (s.MaxItemLevel != -1 && item.ItemLevel > s.MaxItemLevel) {
 		return errors.New("invalid item level")
 	}
 	if classItems, ok := s.ClassToItems[item.Class]; !ok {
@@ -168,64 +168,71 @@ func NewUnidChaosRecipe() (Recipe, error) {
 	return &UnidChaosRecipe{}, nil
 }
 
-func getViableRares(tabIndex int, index bleve.Index, searchSize int) (items []PoeStashItem, err error) {
+func getViableRares(tabIndex int, index bleve.Index, searchSize int, restrictMaxLevel bool) (items []PoeStashItem, err error) {
 	var filters []string
 	if tabIndex != -1 {
-		filters = append(filters, fmt.Sprintf("tabIndex:%d", tabIndex))
+		filters = append(filters, fmt.Sprintf("+tabIndex:%d", tabIndex))
 	}
-	filters = append(filters, fmt.Sprintf("frameType:%d", poeFrameTypes[PoeFrameTypeRare]))
+	filters = append(filters, fmt.Sprintf("+frameType:%s", poeFrameTypes[PoeFrameTypeRare]))
+	filters = append(filters, "+identified:0")
 	filters = append(filters, fmt.Sprintf("itemLevel:>=%d", ChaosRecipeMinItemLevel))
-	filters = append(filters, fmt.Sprintf("itemLevel:<=%d", ChaosRecipeMaxItemLevel))
+	if restrictMaxLevel {
+		filters = append(filters, fmt.Sprintf("itemLevel:<=%d", ChaosRecipeMaxItemLevel))
+	}
 	querystring := strings.Join(filters, " ")
 	return QueryIndex(querystring, index, searchSize)
 }
 
 func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, index bleve.Index, findAll bool) (results []RecipeResult, err error) {
-	// if targetItem == nil {
-	// 	rares, err := getViableRares(tabIndex, index, 1)
-	// 	if err != nil {
-	// 		return results, err
-	// 	}
-	// 	if len(rares) == 0 {
-	// 		return results, errors.New(fmt.Sprintf("stash tab %d is empty", tabIndex))
-	// 	}
-	// 	targetItem = &rares[0]
-	// }
-	// if targetItem.ItemLevel < ChaosRecipeMinItemLevel || targetItem.ItemLevel > ChaosRecipeMaxItemLevel {
-	// 	return results, errors.New("item level not between 60-74")
-	// }
-	stash, err := getViableRares(tabIndex, index, PoeQuadTabSize)
+	// Find at least ONE ilvl 60-74 unid rare for the recipe to work
+	rares, err := getViableRares(tabIndex, index, PoeQuadTabSize, true)
+	if len(rares) == 0 || err != nil {
+		return results, err
+	}
+	firstItem := rares[0]
+	set := NewItemSet(ChaosRecipeMinItemLevel, -1)
+	if err = set.AddStashItem(firstItem, true); err != nil {
+		ctxLogger := log.WithFields(log.Fields{
+			"identified": firstItem.Identified,
+			"itemClass":  firstItem.Class,
+			"itemLevel":  firstItem.ItemLevel,
+		})
+		ctxLogger.Debug(err)
+		return results, nil
+	}
+	rares, err = getViableRares(tabIndex, index, PoeQuadTabSize, false)
 	if err != nil {
 		return results, err
 	}
-	for len(stash) > 1 {
-		set := NewItemSet(ChaosRecipeMinItemLevel, ChaosRecipeMaxItemLevel)
+	for len(rares) > 1 {
+		set := NewItemSet(ChaosRecipeMinItemLevel, -1)
+		set.AddStashItem(firstItem, true)
 		if targetItem != nil {
 			err = set.AddStashItem(*targetItem, true)
 			if err != nil {
 				return results, errors.New("invalid target item")
 			}
 		}
-		nextStash := stash[:0]
-		for index, stashItem := range stash {
+		nextRares := rares[:0]
+		for index, stashItem := range rares {
 			ctxLogger := log.WithFields(log.Fields{
 				"itemClass": stashItem.Class,
 			})
 			err = set.AddStashItem(stashItem, true)
 			if err != nil {
 				ctxLogger.Debug(err)
-				nextStash = append(nextStash, stashItem)
+				nextRares = append(nextRares, stashItem)
 				continue
 			}
 			if set.IsFull() {
-				nextStash = append(nextStash, stash[index+1:]...)
+				nextRares = append(nextRares, rares[index+1:]...)
 				break
 			}
 		}
 		if !set.IsFull() {
 			break
 		}
-		stash = nextStash
+		rares = nextRares
 		results = append(results, RecipeResult{
 			Items: set.Items(),
 			Reward: Reward{
