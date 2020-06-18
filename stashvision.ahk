@@ -65,12 +65,13 @@ ParsePositions(output, sets) {
 RunIndexServer(ByRef pid) {
     IniRead, poeSessionId, %configFile%, General, SessionId
     IniRead, accountName, %configFile%, General, AccountName
+    IniRead, leagueName, %configFile%, General, LeagueName, Harvest
     IniRead, tabIndex, %configFile%, Stash, DumpTabIndex, 0
     if (poeSessionId == "ERROR") || (accountName == "ERROR") {
         MsgBox, 48, stashvision error, SessionId or AccountName missing from config file
         ExitApp, 1, 1
     }
-    Run stashvision-go\stashvision.exe server -s=%poeSessionId% -a=%accountName% -v -t=%tabIndex% -l=server.log,, hide, pid
+    Run stashvision-go\stashvision.exe server -s=%poeSessionId% -a=%accountName% -v -t=%tabIndex% -L=%leagueName% -l=server.log,, hide, pid
 }
 
 CreateSearchWindow(width, height, ByRef hwnd, ByRef searchString, hidden) {
@@ -117,8 +118,10 @@ DeleteGraphics(hbm, hdc, obm, graphics) {
 
 GetStashPosition(ByRef stashX, ByRef stashY, ByRef stashWidth, ByRef stashHeight) {
     WinGetPos, poeX, poeY, poeWidth, poeHeight, Path of Exile
-    stashX := 23
-    stashY := Round(poeHeight * 0.15)
+    stashXroot := 23/2560
+    stashYroot := 216/1440
+    stashX := Round(poeWidth * stashXroot)
+    stashY := Round(poeHeight * stashYroot)
     stashWidth := Round(poeWidth * 0.33)
     stashHeight := poeHeight - stashY - 380
 }
@@ -139,8 +142,10 @@ HighlightChaosRecipe() {
     } else {
         rewardSets := []
         IniRead, tabIndex, %configFile%, Stash, DumpTabIndex, 0
-        cmd := "stashvision-go\stashvision.exe recipe -n=unid_chaos -p -t=" tabIndex
+        SetWorkingDir %A_ScriptDir%\stashvision-go
+        cmd := "stashvision.exe r -n=unid_chaos -p -t=" tabIndex
         ShellExec(cmd, output)
+        SetWorkingDir %A_ScriptDir%
         ParsePositions(output, rewardSets)
         currentSetIndex = 1
         positions := rewardSets[currentSetIndex]

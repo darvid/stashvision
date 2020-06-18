@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/celicoo/docli"
 	"github.com/darvid/stashvision/stashvision-go"
@@ -71,11 +72,7 @@ func (q *Query) Run() {
 	} else if !q.Json {
 		log.Infof("%d search results", len(items))
 		for i, item := range items {
-			name := item.Name
-			if name == "" {
-				name = "[unid]"
-			}
-			log.Infof("- %d: %d %s %s", i+1, item.ItemLevel, name, item.TypeLine)
+			log.Infof("- %d: %s", i+1, item.ToString())
 		}
 	} else {
 		var b []byte
@@ -193,9 +190,9 @@ func (r *Recipe) Run() {
 }
 
 type Server struct {
-	AccountName, LogFile, PoeSessionId string
-	TabIndex                           int
-	Verbose                            bool
+	AccountName, LeagueName, LogFile, PoeSessionId string
+	TabIndex                                       int
+	Verbose                                        bool
 }
 
 func (s *Server) Doc() string {
@@ -203,6 +200,7 @@ func (s *Server) Doc() string {
 
 arguments:
   -a, --account-name    account name
+  -L, --league-name     league name
   -l, --log-file=<file> log to a local file instead of stderr
   -s, --poe-session-id  value of POESESSID
   -t, --tab-index       tab index (default 0)
@@ -235,7 +233,8 @@ func (s *Server) Run() {
 	if s.Verbose {
 		enableVerboseLogging()
 	}
-	stashvision.RunServer(s.PoeSessionId, s.AccountName, s.TabIndex, nil)
+	leagueName := strings.ToLower(s.LeagueName)
+	stashvision.RunServer(s.PoeSessionId, s.AccountName, leagueName, s.TabIndex, nil)
 }
 
 type Stashvision struct {

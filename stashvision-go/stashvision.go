@@ -127,6 +127,14 @@ type PoeStashItem struct {
 	Y           int               `json:"y"`
 }
 
+func (i *PoeStashItem) ToString() string {
+	name := i.Name
+	if name == "" {
+		name = "[unid]"
+	}
+	return fmt.Sprintf("%d %s %s", i.ItemLevel, name, i.TypeLine)
+}
+
 func (i *PoeStashItem) PositionString() string {
 	return fmt.Sprintf("%dx%d:%d,%d", i.Width, i.Height, i.X, i.Y)
 }
@@ -143,8 +151,6 @@ func init() {
 }
 
 func CreateOrOpenIndex(runtimeConfig *map[string]interface{}) (bleve.Index, error) {
-	ctxLogger := log.WithFields(log.Fields{"indexName": bleveIndexNameStash})
-
 	// XXX: Need to detect read-only attribute on index paths to ensure
 	// bleve/scorch can delete index files successfully, or warn the user
 	// if it doesn't have permission.
@@ -154,6 +160,10 @@ func CreateOrOpenIndex(runtimeConfig *map[string]interface{}) (bleve.Index, erro
 	// indexPath := filepath.Join(cache.Path, bleveIndexNameStash)
 
 	indexPath := filepath.Join(ConfigDirs.LocalPath, bleveIndexNameStash)
+	ctxLogger := log.WithFields(log.Fields{
+		"indexName": bleveIndexNameStash,
+		"indexPath": indexPath,
+	})
 	if _, err := os.Stat(indexPath); !os.IsNotExist(err) {
 		ctxLogger.Debug("opening index")
 		if runtimeConfig != nil {
@@ -193,7 +203,7 @@ func ClearIndexFromQuery(querystring string, index bleve.Index) error {
 }
 
 func IndexStashItem(item PoeStashItem, batch bleve.Batch) error {
-	ctxLogger := log.WithFields(log.Fields{"itemID": item.ID})
+	ctxLogger := log.WithFields(log.Fields{"item": item.ToString()})
 	err := batch.Index(item.ID, item)
 	if err != nil {
 		return errors.New("failed to index stash item")
@@ -230,7 +240,7 @@ func IndexStashItems(items []PoeStashItem, index bleve.Index, clearTabIndex int)
 	return nil
 }
 
-func RunServer(poeSessionId string, accountName string, tabIndex int, index *bleve.Index) {
+func RunServer(poeSessionId string, accountName string, leagueName string, tabIndex int, index *bleve.Index) {
 	session := PoeSession{poeSessionId}
 
 	job := func() {
@@ -243,7 +253,7 @@ func RunServer(poeSessionId string, accountName string, tabIndex int, index *ble
 				index = &index_
 			}
 		}
-		items, err := session.GetStashItems(accountName, "blight", 0, tabIndex)
+		items, err := session.GetStashItems(accountName, leagueName, 0, tabIndex)
 		if err != nil {
 			log.Error(err)
 			return
@@ -377,7 +387,7 @@ func (s *PoeSession) GetStashItems(accountName string, league string, tabs int, 
 			if strings.HasPrefix(class, "Superior ") {
 				class = class[9:]
 			}
-			field["class"] = PoeItemNamesToClasses[class]
+			field["class"] = poeItemNamesToClasses[class]
 			field["tabIndex"] = tabIndex
 			frameType := int(field["frameType"].(float64))
 			field["frameType"] = poeFrameTypes[frameType]

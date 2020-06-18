@@ -2,32 +2,54 @@
 
 ![unsplash.com/@romankraft](splash.jpg)
 
-Stashvision is a proof-of-concept private stash indexing tool and
+Stashvision is a **proof-of-concept** private stash indexing tool and
 overlay for [Path of Exile][1].
 
 ## Rationale
 
-Having more robust stash searching in Path of Exile, while definitely a
-beneficial feature, was not the original motivation for **Stashvision**.
-The pain and time sink of organizing and optimizing item collection and
-vendoring for the [chaos recipe][2] was.
+### Better search
 
-Naive stash searching is definitely something many have complained about
-over the years, however, with few solutions other than just dealing with
-it until GGG develops more powerful searching functionality.
-For example, searching for `gloves` will not highlight
-`Assassin's Mitts`, despite them being gloves. Searching for items with
-a specific number of sockets or linked sockets is also impossible, among
-other properties.
+<p align="center">
+  <img src="https://i.imgur.com/gunkgNe.png">
+</p>
+
+Naive stash searching is something many players have complained about
+over the years, with few solutions other than just dealing with it until
+GGG develops more powerful searching functionality.
 
 A number of open source tools exist for searching the stash locally,
 outside of the game, but it's just as painful having to lookup the item
 position in-game.
 
-Thus, **Stashvision** provides a stash tab item indexing framework and
-CLI utility for indexing, querying, and recipe scanning your private
-stash tabs, _as well as_ an AutoHotkey-based overlay that highlights the
-items at the press of a hotkey.
+### Recipe discovery
+
+<p align="center">
+  <img src="https://i.imgur.com/LfK4nuu.png">
+</p>
+
+Chaos recipes are great for passively making currency, but a time
+investment trade-off must be made; either play stash tab tetris prior
+to mapping in an effort to "optimize" rapid stashing of items
+post-grind, or spend a considerable amount of time (only after your
+tab(s) are full, granted) searching for the right item classes for each
+set.
+
+Maybe GGG will implement some form of a premium recipe fulfilling tab
+in the distant dystopian future, but until then, the only way to truly
+optimize vendor recipe discovery (WITHOUT buying 10 quad tabs) is to
+augment your brain with an AI implant, improving chaos recipe item
+recognition by a factor of 10. As an added bonus, the AI will be able
+to discern what killed you in Blight encounters when your screen looks
+like a bowl of spaghetti.
+
+Or just use **Stashvision**.
+
+---
+
+**Stashvision** provides a stash tab item indexing framework and CLI
+utility for indexing, querying, and recipe scanning your private stash
+tabs, as well as an AutoHotkey-based overlay that highlights the items
+at the press of a hotkey.
 
 **No auto-clicking is involved, so Stashvision should be 100% ToS
 compliant.**
@@ -41,6 +63,18 @@ compliant.**
   have installed regardless for [PoE-TradeMacro][5].
 * Non-intrusive to the game client. Completely hotkey-driven, and
   absolutely no auto-clicking.
+
+## Caveats
+
+* Avoid manipulating your stash tabs (or at least the one being scanned)
+  excessively, as updates are nowhere close to real-time. For chaos
+  recipes, the ideal workflow would be to start with a full quad tab,
+  highlight the recipe, move items from the stash to your inventory,
+  vendor, cycle to the next set of items, rinse and repeat, all without
+  moving any items around, or adding new ones to the stash tab.
+* The overlay only works if your game is running in windowed borderless
+  mode. The language will also likely need to be set to English, much
+  like PoE-TradeMacro and other tools that consume PoE's stash API.
 
 ## Screenshots
 
@@ -199,9 +233,14 @@ y
 
 In no particular order...
 
+* Settings GUI
+* Autocomplete search
+* OAuth
 * Multiple stash tab support
 * Detect in-game stash tab state non-intrusively
 * More vendor recipe support
+* Automatically find item sets (i.e. ring + ring + amulet) that fulfill
+  missing resistance values
 * Total potential chaos recipe reward displayed as another overlay
 
 
