@@ -23,3 +23,8 @@ jobs:
         GOOS: windows
         GOARCH: amd64
       working-directory: ./stashvision-go
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: stashvision.exe
+        path: stashvision-go/stashvision.exe
