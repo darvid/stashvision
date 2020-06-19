@@ -37,6 +37,7 @@ item_class_names = (
     "Sceptre",
     "Shield",
     "Staff",
+    "Thrusting One Hand Sword",
     "Two Hand Axe",
     "Two Hand Mace",
     "Two Hand Sword",

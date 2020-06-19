@@ -52,7 +52,8 @@ const (
 func IsClassTwoHandedWeapon(class string) (bool, error) {
 	switch class {
 	case "Claw", "Dagger", "One Hand Axe", "One Hand Mace",
-		"One Hand Sword", "Rune Dagger", "Sceptre", "Shield", "Wand":
+		"One Hand Sword", "Rune Dagger", "Sceptre", "Shield",
+		"Thrusting One Hand Sword", "Wand":
 		return false, nil
 	case "Bow", "Staff", "Two Hand Axe", "Two Hand Mace",
 		"Two Hand Sword", "Warstaff":
@@ -75,28 +76,29 @@ type ItemSet struct {
 func NewItemSet(minItemLevel int, maxItemlevel int) *ItemSet {
 	return &ItemSet{
 		ClassToItems: map[string][]PoeStashItem{
-			"Amulet":         make([]PoeStashItem, 0, 1),
-			"Ring":           make([]PoeStashItem, 0, 2),
-			"Belt":           make([]PoeStashItem, 0, 1),
-			"Boots":          make([]PoeStashItem, 0, 1),
-			"Gloves":         make([]PoeStashItem, 0, 1),
-			"Body Armour":    make([]PoeStashItem, 0, 1),
-			"Helmet":         make([]PoeStashItem, 0, 1),
-			"Bow":            make([]PoeStashItem, 0, 1),
-			"Claw":           make([]PoeStashItem, 0, 2),
-			"Dagger":         make([]PoeStashItem, 0, 2),
-			"One Hand Axe":   make([]PoeStashItem, 0, 2),
-			"One Hand Mace":  make([]PoeStashItem, 0, 2),
-			"One Hand Sword": make([]PoeStashItem, 0, 2),
-			"Rune Dagger":    make([]PoeStashItem, 0, 2),
-			"Sceptre":        make([]PoeStashItem, 0, 2),
-			"Shield":         make([]PoeStashItem, 0, 1),
-			"Staff":          make([]PoeStashItem, 0, 1),
-			"Two Hand Axe":   make([]PoeStashItem, 0, 1),
-			"Two Hand Mace":  make([]PoeStashItem, 0, 1),
-			"Two Hand Sword": make([]PoeStashItem, 0, 1),
-			"Wand":           make([]PoeStashItem, 0, 2),
-			"Warstaff":       make([]PoeStashItem, 0, 1),
+			"Amulet":                   make([]PoeStashItem, 0, 1),
+			"Ring":                     make([]PoeStashItem, 0, 2),
+			"Belt":                     make([]PoeStashItem, 0, 1),
+			"Boots":                    make([]PoeStashItem, 0, 1),
+			"Gloves":                   make([]PoeStashItem, 0, 1),
+			"Body Armour":              make([]PoeStashItem, 0, 1),
+			"Helmet":                   make([]PoeStashItem, 0, 1),
+			"Bow":                      make([]PoeStashItem, 0, 1),
+			"Claw":                     make([]PoeStashItem, 0, 2),
+			"Dagger":                   make([]PoeStashItem, 0, 2),
+			"One Hand Axe":             make([]PoeStashItem, 0, 2),
+			"One Hand Mace":            make([]PoeStashItem, 0, 2),
+			"One Hand Sword":           make([]PoeStashItem, 0, 2),
+			"Rune Dagger":              make([]PoeStashItem, 0, 2),
+			"Sceptre":                  make([]PoeStashItem, 0, 2),
+			"Shield":                   make([]PoeStashItem, 0, 1),
+			"Staff":                    make([]PoeStashItem, 0, 1),
+			"Thrusting One Hand Sword": make([]PoeStashItem, 0, 2),
+			"Two Hand Axe":             make([]PoeStashItem, 0, 1),
+			"Two Hand Mace":            make([]PoeStashItem, 0, 1),
+			"Two Hand Sword":           make([]PoeStashItem, 0, 1),
+			"Wand":                     make([]PoeStashItem, 0, 2),
+			"Warstaff":                 make([]PoeStashItem, 0, 1),
 		},
 		MinItemLevel: minItemLevel,
 		MaxItemLevel: maxItemlevel,
@@ -214,7 +216,19 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 			log.Debug("reached max number of sets due to valid 60-74 rares")
 			break
 		}
-		firstItem := strictRares[len(results)]
+
+		var firstItem PoeStashItem
+		for firstItemPos := len(results); firstItemPos <= len(strictRares); firstItemPos++ {
+			firstItem = strictRares[firstItemPos]
+			if !setRares.HasItem(firstItem) {
+				firstItem = strictRares[firstItemPos]
+				break
+			}
+		}
+		if firstItem.ID == "" {
+			log.Debug("ran out of viable 60-74 rares")
+			break
+		}
 		ctxLogger := log.WithFields(log.Fields{
 			"item": firstItem.ToString(),
 		})
@@ -223,7 +237,8 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 			ctxLogger.Debug(err)
 			strictRares = append(strictRares[:0], strictRares[1:]...)
 		} else {
-			ctxLogger.Debug("added item to chaos recipe")
+			ctxLogger.Debug(setRares.HasItem(firstItem))
+			ctxLogger.Debug("added item (strict ilvl) to chaos recipe")
 		}
 
 		if targetItem != nil {
@@ -234,12 +249,13 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 		}
 		nextRares := rares[:0]
 		for index, stashItem := range rares {
-			if setRares.HasItem(stashItem) {
-				continue
-			}
 			ctxLogger := log.WithFields(log.Fields{
 				"item": stashItem.ToString(),
 			})
+			if setRares.HasItem(stashItem) {
+				ctxLogger.Debug("skipping item, already in another set")
+				continue
+			}
 			err = set.AddStashItem(stashItem, true)
 			if err != nil {
 				ctxLogger.Debug(err)
@@ -254,10 +270,15 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 			}
 		}
 		if !set.IsFull() {
+			log.Debug("failed to find a single set")
 			break
 		}
 		rares = nextRares
 		for _, setItem := range set.Items() {
+			ctxLogger := log.WithFields(log.Fields{
+				"item": setItem.ToString(),
+			})
+			ctxLogger.Debug("marking item as existing in a set")
 			setRares.AddItem(setItem)
 		}
 		results = append(results, RecipeResult{
