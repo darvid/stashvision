@@ -1,7 +1,7 @@
 [General]
 SessionId = xxx
 AccountName = xxx
-League = standard
+LeagueName = standard
 
 [Stash]
 DumpTabIndex = 0

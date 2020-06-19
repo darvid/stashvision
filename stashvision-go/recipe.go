@@ -52,7 +52,7 @@ const (
 func IsClassTwoHandedWeapon(class string) (bool, error) {
 	switch class {
 	case "Claw", "Dagger", "One Hand Axe", "One Hand Mace",
-		"One Hand Sword", "Sceptre", "Shield", "Wand":
+		"One Hand Sword", "Rune Dagger", "Sceptre", "Shield", "Wand":
 		return false, nil
 	case "Bow", "Staff", "Two Hand Axe", "Two Hand Mace",
 		"Two Hand Sword", "Warstaff":
@@ -88,6 +88,7 @@ func NewItemSet(minItemLevel int, maxItemlevel int) *ItemSet {
 			"One Hand Axe":   make([]PoeStashItem, 0, 2),
 			"One Hand Mace":  make([]PoeStashItem, 0, 2),
 			"One Hand Sword": make([]PoeStashItem, 0, 2),
+			"Rune Dagger":    make([]PoeStashItem, 0, 2),
 			"Sceptre":        make([]PoeStashItem, 0, 2),
 			"Shield":         make([]PoeStashItem, 0, 1),
 			"Staff":          make([]PoeStashItem, 0, 1),
@@ -180,31 +181,46 @@ func getViableRares(tabIndex int, index bleve.Index, searchSize int, restrictMax
 		filters = append(filters, fmt.Sprintf("itemLevel:<=%d", ChaosRecipeMaxItemLevel))
 	}
 	querystring := strings.Join(filters, " ")
-	return QueryIndex(querystring, index, searchSize)
+	results, err := QueryIndex(querystring, index, searchSize)
+	if err != nil {
+		return results, err
+	}
+	for _, item := range results {
+		if item.ItemLevel < ChaosRecipeMinItemLevel || (restrictMaxLevel && item.ItemLevel > ChaosRecipeMaxItemLevel) {
+			continue
+		}
+		items = append(items, item)
+	}
+	return items, nil
 }
 
 func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, index bleve.Index, findAll bool) (results []RecipeResult, err error) {
-	// Find at least ONE ilvl 60-74 unid rare for the recipe to work
-	rares, err := getViableRares(tabIndex, index, PoeQuadTabSize, true)
-	if len(rares) == 0 || err != nil {
+	log.Debug("getting viable strict rares (ilvl 60-74)")
+	strictRares, err := getViableRares(tabIndex, index, PoeQuadTabSize, true)
+	if err != nil {
 		return results, err
 	}
-	firstItem := rares[0]
-	set := NewItemSet(ChaosRecipeMinItemLevel, -1)
-	if err = set.AddStashItem(firstItem, true); err != nil {
-		ctxLogger := log.WithFields(log.Fields{
-			"item": firstItem.ToString(),
-		})
-		ctxLogger.Debug(err)
-		return results, nil
-	}
-	rares, err = getViableRares(tabIndex, index, PoeQuadTabSize, false)
+
+	log.Debug("getting all viable rares (ilvl 60+)")
+	rares, err := getViableRares(tabIndex, index, PoeQuadTabSize, false)
 	if err != nil {
 		return results, err
 	}
 	for len(rares) > 1 {
+		if len(results) == len(strictRares) {
+			log.Debug("reached max number of sets due to valid 60-74 rares")
+			break
+		}
+		firstItem := strictRares[len(results)]
 		set := NewItemSet(ChaosRecipeMinItemLevel, -1)
-		set.AddStashItem(firstItem, true)
+		if err := set.AddStashItem(firstItem, true); err != nil {
+			ctxLogger := log.WithFields(log.Fields{
+				"item": firstItem.ToString(),
+			})
+			ctxLogger.Debug(err)
+			strictRares = append(strictRares[:0], strictRares[1:]...)
+		}
+
 		if targetItem != nil {
 			err = set.AddStashItem(*targetItem, true)
 			if err != nil {
