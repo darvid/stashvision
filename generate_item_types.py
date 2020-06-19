@@ -5,14 +5,14 @@ import requests
 
 golang_tmpl = """package stashvision
 
-var PoeItemClassesToNames = make(map[string][]string)
-var PoeItemNamesToClasses = make(map[string]string)
+var poeItemClassesToNames = make(map[string][]string)
+var poeItemNamesToClasses = make(map[string]string)
 
 func init() {{
     {init_body}
-    for itemClass, itemNames := range PoeItemClassesToNames {{
+    for itemClass, itemNames := range poeItemClassesToNames {{
         for _, itemName := range itemNames {{
-            PoeItemNamesToClasses[itemName] = itemClass
+            poeItemNamesToClasses[itemName] = itemClass
         }}
     }}
 }}
@@ -33,6 +33,7 @@ item_class_names = (
     "One Hand Sword",
     "Quiver",
     "Ring",
+    "Rune Dagger",
     "Sceptre",
     "Shield",
     "Staff",
@@ -42,8 +43,8 @@ item_class_names = (
     "Wand",
     "Warstaff",
 )
-repoe_repo = "brather1ng/RePoE"
-base_items_url = f"https://github.com/{repoe_repo}/raw/master/data/base_items.json"
+base_items_url = ("https://raw.github.com/brather1ng/RePoE/"
+                  "master/RePoE/data/base_items.json")
 
 
 def main():
@@ -59,7 +60,7 @@ def main():
     for class_name, names in item_classes.items():
         names_repr = json.dumps(list(names), indent=8, ensure_ascii=False)
         init_statements.append(
-            f'PoeItemClassesToNames["{class_name}"] = '
+            f'poeItemClassesToNames["{class_name}"] = '
             f"[]string{{\n        {names_repr[1:-1].strip()},\n    }}"
         )
     with open("./stashvision-go/item_classes.go", "w") as f:

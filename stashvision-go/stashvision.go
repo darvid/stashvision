@@ -132,7 +132,7 @@ func (i *PoeStashItem) ToString() string {
 	if name == "" {
 		name = "[unid]"
 	}
-	return fmt.Sprintf("%d %s %s", i.ItemLevel, name, i.TypeLine)
+	return fmt.Sprintf("%d %s %s %s", i.ItemLevel, name, i.TypeLine, i.Class)
 }
 
 func (i *PoeStashItem) PositionString() string {
