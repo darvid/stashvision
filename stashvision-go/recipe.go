@@ -206,19 +206,24 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 	if err != nil {
 		return results, err
 	}
+
+	setRares := NewPoeStashItemSet()
+
 	for len(rares) > 1 {
 		if len(results) == len(strictRares) {
 			log.Debug("reached max number of sets due to valid 60-74 rares")
 			break
 		}
 		firstItem := strictRares[len(results)]
+		ctxLogger := log.WithFields(log.Fields{
+			"item": firstItem.ToString(),
+		})
 		set := NewItemSet(ChaosRecipeMinItemLevel, -1)
 		if err := set.AddStashItem(firstItem, true); err != nil {
-			ctxLogger := log.WithFields(log.Fields{
-				"item": firstItem.ToString(),
-			})
 			ctxLogger.Debug(err)
 			strictRares = append(strictRares[:0], strictRares[1:]...)
+		} else {
+			ctxLogger.Debug("added item to chaos recipe")
 		}
 
 		if targetItem != nil {
@@ -229,6 +234,9 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 		}
 		nextRares := rares[:0]
 		for index, stashItem := range rares {
+			if setRares.HasItem(stashItem) {
+				continue
+			}
 			ctxLogger := log.WithFields(log.Fields{
 				"item": stashItem.ToString(),
 			})
@@ -237,6 +245,8 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 				ctxLogger.Debug(err)
 				nextRares = append(nextRares, stashItem)
 				continue
+			} else {
+				ctxLogger.Debug("added item to chaos recipe")
 			}
 			if set.IsFull() {
 				nextRares = append(nextRares, rares[index+1:]...)
@@ -247,6 +257,9 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 			break
 		}
 		rares = nextRares
+		for _, setItem := range set.Items() {
+			setRares.AddItem(setItem)
+		}
 		results = append(results, RecipeResult{
 			Items: set.Items(),
 			Reward: Reward{

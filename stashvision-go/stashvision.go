@@ -139,6 +139,30 @@ func (i *PoeStashItem) PositionString() string {
 	return fmt.Sprintf("%dx%d:%d,%d", i.Width, i.Height, i.X, i.Y)
 }
 
+type PoeStashItemSet struct {
+	items map[string]PoeStashItem
+}
+
+func (s *PoeStashItemSet) AddItem(item PoeStashItem) error {
+	if !s.HasItem(item) {
+		s.items[item.ID] = item
+	} else {
+		return errors.New("item already exists in set")
+	}
+	return nil
+}
+
+func (s *PoeStashItemSet) HasItem(item PoeStashItem) bool {
+	_, exists := s.items[item.ID]
+	return exists
+}
+
+func NewPoeStashItemSet() *PoeStashItemSet {
+	var set PoeStashItemSet
+	set.items = make(map[string]PoeStashItem)
+	return &set
+}
+
 var poeStashItemBoolFields []string = []string{
 	"corrupted",
 	"identified",
