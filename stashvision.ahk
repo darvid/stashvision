@@ -24,6 +24,12 @@ global hwndSearch := 0
 global searchString := ""
 global searchHidden := true
 
+global tab_squareWRoot := 53/1080
+global tab_squareHRoot := 53/1080
+global quad_squareWRoot := 53/1080/2
+global quad_squareHRoot := 53/1080/2
+
+
 If !gdiToken := Gdip_Startup() {
     MsgBox, 48, gdiplus error, Gdiplus failed to start. Please ensure you have gdiplus on your system
     ExitApp, 1, 1
@@ -123,7 +129,7 @@ GetStashPosition(ByRef stashX, ByRef stashY, ByRef stashWidth, ByRef stashHeight
     stashX := Round(poeWidth * stashXroot)
     stashY := Round(poeHeight * stashYroot)
     stashWidth := Round(poeWidth * 0.33)
-    stashHeight := poeHeight - stashY - 380
+    stashHeight := poeHeight - stashY - (380/1440*poeHeight)
 }
 
 HighlightChaosRecipe() {
@@ -143,7 +149,7 @@ HighlightChaosRecipe() {
         rewardSets := []
         IniRead, tabIndex, %configFile%, Stash, DumpTabIndex, 0
         SetWorkingDir %A_ScriptDir%\stashvision-go
-        cmd := "stashvision.exe r -n=unid_chaos -p -t=" tabIndex
+        cmd := "stashvision.exe r -n=unid_chaos -v -p -t=" tabIndex
         ShellExec(cmd, output)
         SetWorkingDir %A_ScriptDir%
         ParsePositions(output, rewardSets)
@@ -166,12 +172,13 @@ HighlightChaosRecipe() {
 }
 
 HighlightItem(stashX, stashY, stashWidth, stashHeight, hwnd, graphics, hdc, width, height, x, y, isQuadTab, borderColor) {
+    WinGetPos, poeX, poeY, poeWidth, poeHeight, Path of Exile
     if isQuadTab {
-        rectWidth := 35
-        rectHeight := 35
+        rectWidth := quad_squareWRoot * poeHeight
+        rectHeight := quad_squareHRoot * poeHeight
     } else {
-        rectWidth := 70
-        rectHeight := 70
+        rectWidth := tab_squareWRoot * poeHeight
+        rectHeight := tab_squareHRoot * poeHeight
     }
     pen := Gdip_CreatePen(borderColor, 2)
     Gdip_DrawRectangle(graphics, pen, rectWidth * x, rectHeight * y, rectWidth * width, rectHeight * height)

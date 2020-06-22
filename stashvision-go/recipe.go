@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/blevesearch/bleve"
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -68,13 +69,19 @@ const (
 )
 
 type ItemSet struct {
+	UUID                       uuid.UUID
 	ClassToItems               map[string][]PoeStashItem
 	MinItemLevel, MaxItemLevel int
 	armourCount, weaponCount   int
 }
 
-func NewItemSet(minItemLevel int, maxItemlevel int) *ItemSet {
+func NewItemSet(minItemLevel int, maxItemlevel int) (*ItemSet, error) {
+	uuid, err := uuid.NewUUID()
+	if err != nil {
+		return nil, err
+	}
 	return &ItemSet{
+		UUID: uuid,
 		ClassToItems: map[string][]PoeStashItem{
 			"Amulet":                   make([]PoeStashItem, 0, 1),
 			"Ring":                     make([]PoeStashItem, 0, 2),
@@ -102,7 +109,7 @@ func NewItemSet(minItemLevel int, maxItemlevel int) *ItemSet {
 		},
 		MinItemLevel: minItemLevel,
 		MaxItemLevel: maxItemlevel,
-	}
+	}, nil
 }
 
 func (s *ItemSet) IsFull() bool {
@@ -149,7 +156,7 @@ func (s *ItemSet) AddStashItem(item PoeStashItem, weaponGreedy bool) error {
 
 func (s *ItemSet) RemoveAllWeapons() {
 	for class, itemSet := range s.ClassToItems {
-		if _, err := IsClassTwoHandedWeapon(class); err != nil {
+		if _, err := IsClassTwoHandedWeapon(class); err == nil {
 			s.ClassToItems[class] = itemSet[:0]
 		}
 	}
@@ -157,7 +164,7 @@ func (s *ItemSet) RemoveAllWeapons() {
 }
 
 func (s *ItemSet) Items() (items []PoeStashItem) {
-	for _, setItems := range s.ClassToItems {
+	for itemClass, setItems := range s.ClassToItems {
 		for _, item := range setItems {
 			items = append(items, item)
 		}
@@ -229,15 +236,19 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 			log.Debug("ran out of viable 60-74 rares")
 			break
 		}
+		set, err := NewItemSet(ChaosRecipeMinItemLevel, -1)
+		if err != nil {
+			log.Debug(err)
+			break
+		}
 		ctxLogger := log.WithFields(log.Fields{
 			"item": firstItem.ToString(),
+			"set":  set.UUID.String(),
 		})
-		set := NewItemSet(ChaosRecipeMinItemLevel, -1)
 		if err := set.AddStashItem(firstItem, true); err != nil {
 			ctxLogger.Debug(err)
 			strictRares = append(strictRares[:0], strictRares[1:]...)
 		} else {
-			ctxLogger.Debug(setRares.HasItem(firstItem))
 			ctxLogger.Debug("added item (strict ilvl) to chaos recipe")
 		}
 
@@ -251,6 +262,7 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 		for index, stashItem := range rares {
 			ctxLogger := log.WithFields(log.Fields{
 				"item": stashItem.ToString(),
+				"set":  set.UUID.String(),
 			})
 			if setRares.HasItem(stashItem) {
 				ctxLogger.Debug("skipping item, already in another set")
@@ -270,13 +282,14 @@ func (c *UnidChaosRecipe) ScanIndex(targetItem *PoeStashItem, tabIndex int, inde
 			}
 		}
 		if !set.IsFull() {
-			log.Debug("failed to find a single set")
+			log.Debug("failed to find a full set")
 			break
 		}
 		rares = nextRares
 		for _, setItem := range set.Items() {
 			ctxLogger := log.WithFields(log.Fields{
 				"item": setItem.ToString(),
+				"set":  set.UUID.String(),
 			})
 			ctxLogger.Debug("marking item as existing in a set")
 			setRares.AddItem(setItem)
