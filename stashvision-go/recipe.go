@@ -164,7 +164,7 @@ func (s *ItemSet) RemoveAllWeapons() {
 }
 
 func (s *ItemSet) Items() (items []PoeStashItem) {
-	for itemClass, setItems := range s.ClassToItems {
+	for _, setItems := range s.ClassToItems {
 		for _, item := range setItems {
 			items = append(items, item)
 		}
