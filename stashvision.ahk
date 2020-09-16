@@ -135,10 +135,10 @@ DeleteGraphics(hbm, hdc, obm, graphics) {
 GetStashPosition(ByRef stashX, ByRef stashY, ByRef stashWidth, ByRef stashHeight) {
     WinGetPos, poeX, poeY, poeWidth, poeHeight, Path of Exile
     ; stashXroot := 23/2560
-    stashYroot := 216/1440
-    ; stashX := Round(poeWidth * stashXroot)
-    stashX := 23
-    stashY := Round(poeHeight * stashYroot)
+    stashXroot := .0148148148148148
+    stashYroot := .15
+    stashX := Round(stashXroot * poeHeight)
+    stashY := Round(stashYroot * poeHeight)
     stashWidth := Round(poeWidth * 0.33)
 
     GetStashItemRectDimensions(poeHeight, false, rectWidth, rectHeight)
