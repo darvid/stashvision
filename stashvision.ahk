@@ -44,6 +44,16 @@ ShellExec(command, ByRef stdout) {
         stdout := exec.StdOut.ReadAll()
 }
 
+GetStashItemRectDimensions(poeHeight, isQuadTab, ByRef rectWidth, ByRef rectHeight) {
+    if isQuadTab {
+        rectWidth := quad_squareWRoot * poeHeight
+        rectHeight := quad_squareHRoot * poeHeight
+    } else {
+        rectWidth := tab_squareWRoot * poeHeight
+        rectHeight := tab_squareHRoot * poeHeight
+    }
+}
+
 ParsePositions(output, sets) {
     setsOutput := StrSplit(output, "---")
     for setIndex, setLines in setsOutput {
@@ -124,12 +134,16 @@ DeleteGraphics(hbm, hdc, obm, graphics) {
 
 GetStashPosition(ByRef stashX, ByRef stashY, ByRef stashWidth, ByRef stashHeight) {
     WinGetPos, poeX, poeY, poeWidth, poeHeight, Path of Exile
-    stashXroot := 23/2560
+    ; stashXroot := 23/2560
     stashYroot := 216/1440
-    stashX := Round(poeWidth * stashXroot)
+    ; stashX := Round(poeWidth * stashXroot)
+    stashX := 23
     stashY := Round(poeHeight * stashYroot)
     stashWidth := Round(poeWidth * 0.33)
-    stashHeight := poeHeight - stashY - (380/1440*poeHeight)
+
+    GetStashItemRectDimensions(poeHeight, false, rectWidth, rectHeight)
+    stashHeight := rectHeight * 12
+    stashYend := Round(stashY + stashHeight)
 }
 
 HighlightChaosRecipe() {
@@ -173,15 +187,12 @@ HighlightChaosRecipe() {
 
 HighlightItem(stashX, stashY, stashWidth, stashHeight, hwnd, graphics, hdc, width, height, x, y, isQuadTab, borderColor) {
     WinGetPos, poeX, poeY, poeWidth, poeHeight, Path of Exile
-    if isQuadTab {
-        rectWidth := quad_squareWRoot * poeHeight
-        rectHeight := quad_squareHRoot * poeHeight
-    } else {
-        rectWidth := tab_squareWRoot * poeHeight
-        rectHeight := tab_squareHRoot * poeHeight
-    }
+    GetStashItemRectDimensions(poeHeight, isQuadTab, rectWidth, rectHeight)
     pen := Gdip_CreatePen(borderColor, 2)
-    Gdip_DrawRectangle(graphics, pen, rectWidth * x, rectHeight * y, rectWidth * width, rectHeight * height)
+
+    x := rectWidth * x
+    y := rectHeight * y
+    Gdip_DrawRectangle(graphics, pen, x, y, rectWidth * width, rectHeight * height)
     Gdip_DeletePen(pen)
 
     UpdateLayeredWindow(hwnd, hdc, stashX, stashY, stashWidth, stashHeight)
